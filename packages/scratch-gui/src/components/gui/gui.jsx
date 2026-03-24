@@ -114,6 +114,7 @@ let isRendererSupported = null;
 const GUIComponent = props => {
     const [aiSearchUnlocked, setAiSearchUnlocked] = useState(false);
     const [logoGlowActive, setLogoGlowActive] = useState(false);
+    const [aiModeEnabled, setAiModeEnabled] = useState(false);
     const logoClickCountRef = useRef(0);
 
     const intl = useIntl();
@@ -233,6 +234,18 @@ const GUIComponent = props => {
         }
     }, [theme, hasActiveMembership, props.setTheme]);
 
+    useEffect(() => {
+        const onKeyDown = (event) => {
+            if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'a') {
+                setAiModeEnabled(current => !current);
+            }
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => {
+            window.removeEventListener('keydown', onKeyDown);
+        };
+    }, []);
+
     const onLogoClick = useCallback((event) => {
         if (onClickLogo) {
             onClickLogo(event);
@@ -245,6 +258,9 @@ const GUIComponent = props => {
             setTimeout(() => {
                 setLogoGlowActive(false);
             }, 900);
+        if (logoClickCountRef.current >= 5) {
+            setAiModeEnabled(true);
+            logoClickCountRef.current = 0;
         }
     }, [onClickLogo]);
 
@@ -398,6 +414,7 @@ const GUIComponent = props => {
                     />}
                     <Box className={classNames(boxStyles, styles.flexWrapper)}>
                         {aiSearchUnlocked ? <AIPanel /> : null}
+                        {aiModeEnabled ? <AIPanel /> : null}
                         <Box
                             role="main"
                             aria-label={intl.formatMessage(ariaMessages.editor)}
