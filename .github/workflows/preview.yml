@@ -1,0 +1,61 @@
+name: Preview App
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    env:
+      GEMINI_API_KEY: AIzaSyA6pZakVv7UdIE6Z1XrBAYMYu8dT4ofnuA
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install deps (frontend)
+        run: |
+          cd packages/scratch-gui
+          npm install
+
+      - name: Build frontend
+        run: |
+          cd packages/scratch-gui
+          npm run build
+
+      - name: Install deps (AI server)
+        run: |
+          cd ai-server
+          npm install
+
+      - name: Start AI server
+        run: |
+          cd ai-server
+          node index.js &
+      
+      - name: Install serve
+        run: npm install -g serve
+
+      - name: Start frontend
+        run: |
+          serve -s packages/scratch-gui/build -l 3000 &
+
+      - name: Install cloudflared
+        run: |
+          wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+          sudo dpkg -i cloudflared-linux-amd64.deb
+
+      - name: Run tunnel
+        run: |
+          cloudflared tunnel --url http://localhost:3000 > tunnel.log 2>&1 &
+          sleep 10
+          cat tunnel.log
+
+      - name: Keep alive
+        run: sleep 3600
