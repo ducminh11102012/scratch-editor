@@ -9,7 +9,7 @@ jobs:
 
     env:
       GEMINI_API_KEY: AIzaSyA6pZakVv7UdIE6Z1XrBAYMYu8dT4ofnuA
-
+      HUSKY: 0
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install deps (frontend)
         run: |
