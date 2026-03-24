@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
-import React, {useEffect, useCallback} from 'react';
+import React, {useEffect, useCallback, useRef, useState} from 'react';
 import {defineMessages, FormattedMessage, useIntl} from 'react-intl';
 import {connect} from 'react-redux';
 import MediaQuery from 'react-responsive';
@@ -47,6 +47,7 @@ import {setPlatform} from '../../reducers/platform.js';
 import {setTheme} from '../../reducers/settings.js';
 import {PLATFORM} from '../../lib/platform.js';
 import {ModalFocusProvider} from '../../contexts/modal-focus-context.jsx';
+import AIPanel from '../ai-panel/ai-panel.jsx';
 
 const ariaMessages = defineMessages({
     menuBar: {
@@ -111,6 +112,10 @@ const ariaMessages = defineMessages({
 let isRendererSupported = null;
 
 const GUIComponent = props => {
+    const [aiSearchUnlocked, setAiSearchUnlocked] = useState(false);
+    const [logoGlowActive, setLogoGlowActive] = useState(false);
+    const logoClickCountRef = useRef(0);
+
     const intl = useIntl();
     const {
         accountMenuOptions,
@@ -227,6 +232,21 @@ const GUIComponent = props => {
             props.setTheme(DEFAULT_THEME);
         }
     }, [theme, hasActiveMembership, props.setTheme]);
+
+    const onLogoClick = useCallback((event) => {
+        if (onClickLogo) {
+            onClickLogo(event);
+        }
+        logoClickCountRef.current += 1;
+        if (logoClickCountRef.current >= 3) {
+            setAiSearchUnlocked(true);
+            setLogoGlowActive(true);
+            logoClickCountRef.current = 0;
+            setTimeout(() => {
+                setLogoGlowActive(false);
+            }, 900);
+        }
+    }, [onClickLogo]);
 
     const tabClassNames = {
         tabs: styles.tabs,
@@ -361,7 +381,8 @@ const GUIComponent = props => {
                         showComingSoon={showComingSoon}
                         onClickAbout={onClickAbout}
                         onClickAccountNav={onClickAccountNav}
-                        onClickLogo={onClickLogo}
+                        onClickLogo={onLogoClick}
+                        logoGlowActive={logoGlowActive}
                         onCloseAccountNav={onCloseAccountNav}
                         onLogOut={onLogOut}
                         onClickLogin={onClickLogin}
@@ -376,6 +397,7 @@ const GUIComponent = props => {
                         accountMenuOptions={accountMenuOptions}
                     />}
                     <Box className={classNames(boxStyles, styles.flexWrapper)}>
+                        {aiSearchUnlocked ? <AIPanel /> : null}
                         <Box
                             role="main"
                             aria-label={intl.formatMessage(ariaMessages.editor)}

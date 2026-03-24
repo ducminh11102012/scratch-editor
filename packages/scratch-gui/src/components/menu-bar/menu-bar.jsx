@@ -448,7 +448,8 @@ class MenuBar extends React.Component {
                                 id="logo_img"
                                 alt="Scratch"
                                 className={classNames(styles.scratchLogo, {
-                                    [styles.clickable]: typeof this.props.onClickLogo !== 'undefined'
+                                    [styles.clickable]: typeof this.props.onClickLogo !== 'undefined',
+                                    [styles.unlockGlow]: this.props.logoGlowActive
                                 })}
                                 draggable={false}
                                 src={getScratchLogo(this.props.platform)}
@@ -937,6 +938,7 @@ MenuBar.propTypes = {
     locale: PropTypes.string.isRequired,
     loginMenuOpen: PropTypes.bool,
     logo: PropTypes.string,
+    logoGlowActive: PropTypes.bool,
     mode1920: PropTypes.bool,
     mode1990: PropTypes.bool,
     mode2020: PropTypes.bool,
@@ -998,6 +1000,7 @@ MenuBar.propTypes = {
 
 MenuBar.defaultProps = {
     logo: scratchLogo,
+    logoGlowActive: false,
     onShare: () => {}
 };
 
