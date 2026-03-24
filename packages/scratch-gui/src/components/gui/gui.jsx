@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
-import React, {useEffect, useCallback} from 'react';
+import React, {useEffect, useCallback, useRef, useState} from 'react';
 import {defineMessages, FormattedMessage, useIntl} from 'react-intl';
 import {connect} from 'react-redux';
 import MediaQuery from 'react-responsive';
@@ -47,6 +47,7 @@ import {setPlatform} from '../../reducers/platform.js';
 import {setTheme} from '../../reducers/settings.js';
 import {PLATFORM} from '../../lib/platform.js';
 import {ModalFocusProvider} from '../../contexts/modal-focus-context.jsx';
+import AIPanel from '../ai-panel/ai-panel.jsx';
 
 const ariaMessages = defineMessages({
     menuBar: {
@@ -111,6 +112,9 @@ const ariaMessages = defineMessages({
 let isRendererSupported = null;
 
 const GUIComponent = props => {
+    const [aiModeEnabled, setAiModeEnabled] = useState(false);
+    const logoClickCountRef = useRef(0);
+
     const intl = useIntl();
     const {
         accountMenuOptions,
@@ -227,6 +231,29 @@ const GUIComponent = props => {
             props.setTheme(DEFAULT_THEME);
         }
     }, [theme, hasActiveMembership, props.setTheme]);
+
+    useEffect(() => {
+        const onKeyDown = (event) => {
+            if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'a') {
+                setAiModeEnabled(current => !current);
+            }
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => {
+            window.removeEventListener('keydown', onKeyDown);
+        };
+    }, []);
+
+    const onLogoClick = useCallback((event) => {
+        if (onClickLogo) {
+            onClickLogo(event);
+        }
+        logoClickCountRef.current += 1;
+        if (logoClickCountRef.current >= 5) {
+            setAiModeEnabled(true);
+            logoClickCountRef.current = 0;
+        }
+    }, [onClickLogo]);
 
     const tabClassNames = {
         tabs: styles.tabs,
@@ -361,7 +388,7 @@ const GUIComponent = props => {
                         showComingSoon={showComingSoon}
                         onClickAbout={onClickAbout}
                         onClickAccountNav={onClickAccountNav}
-                        onClickLogo={onClickLogo}
+                        onClickLogo={onLogoClick}
                         onCloseAccountNav={onCloseAccountNav}
                         onLogOut={onLogOut}
                         onClickLogin={onClickLogin}
@@ -376,6 +403,7 @@ const GUIComponent = props => {
                         accountMenuOptions={accountMenuOptions}
                     />}
                     <Box className={classNames(boxStyles, styles.flexWrapper)}>
+                        {aiModeEnabled ? <AIPanel /> : null}
                         <Box
                             role="main"
                             aria-label={intl.formatMessage(ariaMessages.editor)}
