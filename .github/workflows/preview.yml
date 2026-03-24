@@ -22,7 +22,7 @@ jobs:
       - name: Install deps (frontend)
         run: |
           cd packages/scratch-gui
-          npm install
+          npm install --ignore-scripts
 
       - name: Build frontend
         run: |
