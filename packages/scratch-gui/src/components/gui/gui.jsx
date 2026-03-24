@@ -112,6 +112,8 @@ const ariaMessages = defineMessages({
 let isRendererSupported = null;
 
 const GUIComponent = props => {
+    const [aiSearchUnlocked, setAiSearchUnlocked] = useState(false);
+    const [logoGlowActive, setLogoGlowActive] = useState(false);
     const [aiModeEnabled, setAiModeEnabled] = useState(false);
     const logoClickCountRef = useRef(0);
 
@@ -249,6 +251,13 @@ const GUIComponent = props => {
             onClickLogo(event);
         }
         logoClickCountRef.current += 1;
+        if (logoClickCountRef.current >= 3) {
+            setAiSearchUnlocked(true);
+            setLogoGlowActive(true);
+            logoClickCountRef.current = 0;
+            setTimeout(() => {
+                setLogoGlowActive(false);
+            }, 900);
         if (logoClickCountRef.current >= 5) {
             setAiModeEnabled(true);
             logoClickCountRef.current = 0;
@@ -389,6 +398,7 @@ const GUIComponent = props => {
                         onClickAbout={onClickAbout}
                         onClickAccountNav={onClickAccountNav}
                         onClickLogo={onLogoClick}
+                        logoGlowActive={logoGlowActive}
                         onCloseAccountNav={onCloseAccountNav}
                         onLogOut={onLogOut}
                         onClickLogin={onClickLogin}
@@ -403,6 +413,7 @@ const GUIComponent = props => {
                         accountMenuOptions={accountMenuOptions}
                     />}
                     <Box className={classNames(boxStyles, styles.flexWrapper)}>
+                        {aiSearchUnlocked ? <AIPanel /> : null}
                         {aiModeEnabled ? <AIPanel /> : null}
                         <Box
                             role="main"
